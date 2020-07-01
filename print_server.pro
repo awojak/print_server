@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
+QT       += core gui serialport
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -26,13 +26,22 @@ CONFIG += c++11
 
 SOURCES += \
         main.cpp \
-        mainwindow.cpp
+        mainwindow.cpp \
+    communication.cpp \
+    configurewindow.cpp \
+    min.c \
+    min_callback.c
 
 HEADERS += \
-        mainwindow.h
+        mainwindow.h \
+    communication.h \
+    configurewindow.h \
+    min.h \
+    types.h
 
 FORMS += \
-        mainwindow.ui
+        mainwindow.ui \
+    configurewindow.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
