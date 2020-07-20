@@ -32,6 +32,7 @@ signals:
 
 private:
     void showEvent(QShowEvent *ev);
+    void searchForPort();
     Ui::ConfigureWindow *ui;
     SerialStruct serial;
     QVector<QString> portList;

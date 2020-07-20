@@ -30,6 +30,7 @@ public:
     int OpenSerialPort();
     int CloseSerialPort();
     bool isConnected();
+    bool isConfigured();
     void SendData(TData tx);
     QString getSerialID();
 

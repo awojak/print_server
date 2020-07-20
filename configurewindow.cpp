@@ -30,7 +30,7 @@ ConfigureWindow::ConfigureWindow(QWidget *parent) :
 
 }
 
-void ConfigureWindow::showEvent(QShowEvent *ev)
+void ConfigureWindow::searchForPort()
 {
     //dodanie dostępnych portów com do listy
     ui->cbSerialPort->clear();
@@ -40,17 +40,18 @@ void ConfigureWindow::showEvent(QShowEvent *ev)
 
     foreach (const QSerialPortInfo &infoport, QSerialPortInfo::availablePorts())
     {
-        if(infoport.serialNumber().startsWith("V1"))
-        {
             ui->cbSerialPort->addItem(infoport.portName()+": "+infoport.serialNumber());
             portList.append(infoport.portName());
             serialList.append(infoport.serialNumber());
             found = true;
-        }
     }
 
     ui->bApply->setEnabled(found);
-    UNUSED(*ev);
+}
+void ConfigureWindow::showEvent(QShowEvent *ev)
+{
+    UNUSED(ev);
+    this->searchForPort();
 }
 
 ConfigureWindow::~ConfigureWindow()
@@ -60,23 +61,7 @@ ConfigureWindow::~ConfigureWindow()
 
 void ConfigureWindow::on_bRefreshSerialPort_clicked()
 {
-    ui->cbSerialPort->clear();
-    portList.clear();
-    serialList.clear();
-    bool found = false;
-    //dodanie dostępnych portów com do listy
-    foreach (const QSerialPortInfo &infoport, QSerialPortInfo::availablePorts())
-    {
-        if(infoport.serialNumber().startsWith("V1"))
-        {
-            ui->cbSerialPort->addItem(infoport.portName()+": "+infoport.serialNumber());
-            portList.append(infoport.portName());
-            serialList.append(infoport.serialNumber());
-            found = true;
-        }
-    }
-
-    ui->bApply->setEnabled(found);
+    this->searchForPort();
 }
 
 void ConfigureWindow::on_bClose_clicked()

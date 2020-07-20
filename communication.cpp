@@ -61,6 +61,11 @@ QString Communication::getSerialID()
     return (serial_struct.sPortName + ": " + serial_struct.serialNumber);
 }
 
+bool Communication::isConfigured()
+{
+    return configured;
+}
+
 void Communication::SetSerialPort(SerialStruct s)
 {
     /* Sprawdzamy czy struktura zawiera nazwę portu */
@@ -182,7 +187,7 @@ void Communication::ReadData()
     const int frame_size_max = 28;
 
     QByteArray RxData;
-    serial->waitForReadyRead(2);
+    serial->waitForReadyRead(1);
     RxData = serial->readAll();
     static int state = 1;
     static int frameindex = 0;

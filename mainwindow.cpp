@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 #include"QMessageBox"
 #include "min.h"
+#include "types.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -52,4 +53,49 @@ void MainWindow::ConfigureResponse(SerialStruct serial)
 void MainWindow::on_actionCommunication_triggered()
 {
     configure_window->show();
+}
+
+void MainWindow::connectPrinter()
+{
+    if(communication->isConnected())
+        return;
+
+    if(!communication->isConfigured())
+        return;
+
+    if(communication->OpenSerialPort()!=0)
+    {
+        return;
+    }
+
+    appViewConnected();
+}
+void MainWindow::disconnectPrinter()
+{
+    if(communication->CloseSerialPort()!=0)
+    {
+        return;
+    }
+
+    appViewDisconnected();
+}
+
+void MainWindow::appViewConnected()
+{
+    ui->connectButton->setText(tr("Disconnect"));
+}
+
+void MainWindow::appViewDisconnected()
+{
+    ui->connectButton->setText(tr("Connect"));
+}
+
+void MainWindow::on_connectButton_clicked()
+{
+    if(communication->isConnected())
+    {
+        disconnectPrinter();
+    } else {
+        connectPrinter();
+    }
 }

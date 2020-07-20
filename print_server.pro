@@ -29,8 +29,7 @@ SOURCES += \
         mainwindow.cpp \
     communication.cpp \
     configurewindow.cpp \
-    min.c \
-    min_callback.c
+    min.cpp
 
 HEADERS += \
         mainwindow.h \

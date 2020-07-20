@@ -61,6 +61,7 @@
 #define MIN_H
 
 #include <stdint.h>
+#include <cstdlib>
 #include <stdbool.h>
 
 #ifdef ASSERTION_CHECKING
@@ -72,7 +73,7 @@
 #endif
 
 #ifndef MAX_PAYLOAD
-#define MAX_PAYLOAD                                 (255U)
+#define MAX_PAYLOAD                                 (254U)
 #endif
 
 // Powers of two for FIFO management. Default is 16 frames in the FIFO, total of 1024 bytes for frame data
@@ -100,11 +101,11 @@
 #error "Transport FIFO data allocated cannot exceed 64Kbytes"
 #endif
 
+#ifdef TRANSPORT_PROTOCOL
+
 struct crc32_context {
     uint32_t crc;
 };
-
-#ifdef TRANSPORT_PROTOCOL
 
 struct transport_frame {
     uint32_t last_sent_time_ms;                     // When frame was last sent (used for re-send timeouts)
@@ -112,6 +113,7 @@ struct transport_frame {
     uint8_t payload_len;                            // How big the payload is
     uint8_t min_id;                                 // ID of frame
     uint8_t seq;                                    // Sequence number of frame
+    char m_padding[3];                              // Padding
 };
 
 struct transport_fifo {
@@ -152,51 +154,48 @@ struct min_context {
     uint8_t rx_frame_length;                        // Length of frame
     uint8_t rx_control;                             // Control byte
     uint8_t tx_header_byte_countdown;               // Count out the header bytes
-    uint8_t port;                                   // Number of the port associated with the context
 };
 
-#ifdef TRANSPORT_PROTOCOL
-// Queue a MIN frame in the transport queue
-bool min_queue_frame(struct min_context *self, uint8_t min_id, uint8_t *payload, uint8_t payload_len);
+class MinProtocol
+{
+private:
+    min_context *self;
+    void crc32_init_context(struct crc32_context *context);
+    void crc32_step(struct crc32_context *context, uint8_t byte);
+    uint32_t crc32_finalize(struct crc32_context *context);
+    void stuffed_tx_byte(uint8_t byte);
+    void on_wire_bytes(uint8_t id_control, uint8_t seq, uint8_t *payload_base, uint16_t payload_offset, uint16_t payload_mask, uint8_t payload_len);
+    void transport_fifo_pop();
+    struct transport_frame *transport_fifo_push(uint16_t data_size);
+    struct transport_frame *transport_fifo_get(uint8_t n);
+    void transport_fifo_send(struct transport_frame *frame);
+    void send_ack();
+    void send_reset();
+    void transport_fifo_reset();
+    struct transport_frame *find_retransmit_frame();
+    void valid_frame_received();
+    void rx_byte(uint8_t byte);
+    uint16_t min_tx_space();
+    void min_tx_byte(uint8_t byte);
+    void min_tx_start();
+    void min_tx_finished();
+    void min_application_handler(uint8_t min_id, uint8_t *min_payload, uint8_t len_payload);
 
-// Determine if MIN has space to queue a transport frame
-bool min_queue_has_space_for_frame(struct min_context *self, uint8_t payload_len);
-#endif
+    #ifdef TRANSPORT_PROTOCOL
+    uint32_t min_time_ms(void);
+    #endif
+public:
+    MinProtocol();
+    ~MinProtocol();
+    void min_transport_reset(bool inform_other_side);
+    void min_poll(uint8_t *buf, uint32_t buf_len);
+    void min_send_frame(uint8_t min_id, uint8_t *payload, uint8_t payload_len);
+    #ifdef TRANSPORT_PROTOCOL
+    bool min_queue_frame(uint8_t min_id, uint8_t *payload, uint8_t payload_len);
+    bool min_queue_has_space_for_frame(uint8_t payload_len);
+    #endif
+};
 
-// Send a non-transport frame MIN frame
-void min_send_frame(struct min_context *self, uint8_t min_id, uint8_t *payload, uint8_t payload_len);
-
-// Must be regularly called, with the received bytes since the last call.
-// NB: if the transport protocol is being used then even if there are no bytes
-// this call must still be made in order to drive the state machine for retransmits.
-void min_poll(struct min_context *self, uint8_t *buf, uint32_t buf_len);
-
-// Reset the state machine and (optionally) tell the other side that we have done so
-void min_transport_reset(struct min_context *self, bool inform_other_side);
-
-// CALLBACK. Handle incoming MIN frame
-void min_application_handler(uint8_t min_id, uint8_t *min_payload, uint8_t len_payload, uint8_t port);
-
-#ifdef TRANSPORT_PROTOCOL
-// CALLBACK. Must return current time in milliseconds.
-// Typically a tick timer interrupt will increment a 32-bit variable every 1ms (e.g. SysTick on Cortex M ARM devices).
-uint32_t min_time_ms(void);
-#endif
-
-// CALLBACK. Must return current buffer space in the given port. Used to check that a frame can be
-// queued.
-uint16_t min_tx_space(uint8_t port);
-
-// CALLBACK. Send a byte on the given line.
-void min_tx_byte(uint8_t port, uint8_t byte);
-
-// CALLBACK. Indcates when frame transmission is finished; useful for buffering bytes into a single serial call.
-void min_tx_start(uint8_t port);
-void min_tx_finished(uint8_t port);
-
-// Initialize a MIN context ready for receiving bytes from a serial link
-// (Can have multiple MIN contexts)
-void min_init_context(struct min_context *self, uint8_t port);
 
 #ifdef MIN_DEBUG_PRINTING
 // Debug print
