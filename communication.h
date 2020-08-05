@@ -20,7 +20,7 @@ typedef struct {
 
 } SerialStruct;
 
-class Communication : public ISerialCommunication, public QObject
+class Communication : public QObject, public ISerialCommunication
 {
     Q_OBJECT
 

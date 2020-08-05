@@ -7,6 +7,7 @@ class System : public ISystem
 {
 public:
     System();
+    ~System();
     virtual int getCurrentTimeInMs();
 
 };

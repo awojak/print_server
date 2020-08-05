@@ -7,6 +7,7 @@ class CommandInterpreter : public ICommandInterpreter
 {
 public:
     CommandInterpreter();
+    ~CommandInterpreter();
     virtual bool commandProceed(uint8_t min_id, uint8_t *min_payload, uint8_t len_payload);
 };
 

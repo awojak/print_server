@@ -4,3 +4,8 @@ ICommandInterpreter::ICommandInterpreter()
 {
 
 }
+
+ICommandInterpreter::~ICommandInterpreter()
+{
+
+}

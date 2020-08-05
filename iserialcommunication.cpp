@@ -4,3 +4,8 @@ ISerialCommunication::ISerialCommunication()
 {
 
 }
+
+ISerialCommunication::~ISerialCommunication()
+{
+
+}
