@@ -3,6 +3,8 @@
 
 #include <QObject>
 #include <QtSerialPort>
+#include "callback.h"
+#include "iserialcommunication.h"
 
 typedef struct s_data {
     QByteArray data;
@@ -18,7 +20,7 @@ typedef struct {
 
 } SerialStruct;
 
-class Communication : public QObject
+class Communication : public ISerialCommunication, public QObject
 {
     Q_OBJECT
 
@@ -32,7 +34,24 @@ public:
     bool isConnected();
     bool isConfigured();
     void SendData(TData tx);
+
+    virtual void sendByte(char c);
+    virtual int transmitSpace();
+
     QString getSerialID();
+
+    /**
+     * Associates an data ready action with the Communiation class. The action is performed when the data is recived
+     *
+     * @param  callback The callback to be executed. The callback will be executed with a
+     *                  reference to the Communication.
+     *
+     * @see GenericCallback, handleClickEvent, ClickEvent
+     */
+    void setDataReadyAction(GenericCallback<const Communication&>& callback)
+    {
+        dataReady = &callback;
+    }
 
 private:
     void Transmit();
@@ -44,6 +63,8 @@ private:
     bool connected;
     bool transmitIsGoing;
     QTimer *timeout;
+protected:
+    GenericCallback<const Communication&>* dataReady; ///< The callback to be executed when this AbstractButton is clicked
 
 private slots:
     void ReadData();

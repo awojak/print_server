@@ -17,6 +17,11 @@ MainWindow::MainWindow(QWidget *parent) :
     /* Utórz interfejs komunikacyjny */
     communication = new Communication();
     connect(communication, SIGNAL(communicationError()), this, SLOT(communicationError()));
+
+    protocol = new MinProtocol(communication, &system, &cmd);
+
+    //buttonCallback(this, &MainViewBase::buttonCallbackHandler);
+    //communication.
 }
 
 MainWindow::~MainWindow()

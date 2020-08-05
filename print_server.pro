@@ -29,14 +29,25 @@ SOURCES += \
         mainwindow.cpp \
     communication.cpp \
     configurewindow.cpp \
-    min.cpp
+    min.cpp \
+    iserialcommunication.cpp \
+    icommandinterpreter.cpp \
+    isystem.cpp \
+    system.cpp \
+    commandinterpreter.cpp
 
 HEADERS += \
         mainwindow.h \
     communication.h \
     configurewindow.h \
     min.h \
-    types.h
+    types.h \
+    iserialcommunication.h \
+    icommandinterpreter.h \
+    isystem.h \
+    callback.h \
+    system.h \
+    commandinterpreter.h
 
 FORMS += \
         mainwindow.ui \

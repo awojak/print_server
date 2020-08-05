@@ -266,3 +266,13 @@ void Communication::ReadData()
         }
     }
 }
+
+void Communication::sendByte(char c)
+{
+
+}
+
+int Communication::transmitSpace()
+{
+    return 1;
+}

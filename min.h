@@ -63,6 +63,9 @@
 #include <stdint.h>
 #include <cstdlib>
 #include <stdbool.h>
+#include "iserialcommunication.h"
+#include "isystem.h"
+#include "icommandinterpreter.h"
 
 #ifdef ASSERTION_CHECKING
 #include <assert.h>
@@ -159,7 +162,11 @@ struct min_context {
 class MinProtocol
 {
 private:
+    ISerialCommunication *serial;
+    ISystem *system;
+    ICommandInterpreter *cmd;
     min_context *self;
+
     void crc32_init_context(struct crc32_context *context);
     void crc32_step(struct crc32_context *context, uint8_t byte);
     uint32_t crc32_finalize(struct crc32_context *context);
@@ -185,7 +192,7 @@ private:
     uint32_t min_time_ms(void);
     #endif
 public:
-    MinProtocol();
+    MinProtocol(ISerialCommunication *serial, ISystem *system, ICommandInterpreter *cmd);
     ~MinProtocol();
     void min_transport_reset(bool inform_other_side);
     void min_poll(uint8_t *buf, uint32_t buf_len);

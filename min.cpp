@@ -7,8 +7,6 @@
 #define TRANSPORT_FIFO_SIZE_FRAMES_MASK             (static_cast<uint8_t>(((1U << TRANSPORT_FIFO_SIZE_FRAMES_BITS) - 1U)))
 #define TRANSPORT_FIFO_SIZE_FRAME_DATA_MASK         (static_cast<uint16_t>(((1U << TRANSPORT_FIFO_SIZE_FRAME_DATA_BITS) - 1U)))
 
-#define UNUSED(x) (void)(x)
-
 // Number of bytes needed for a frame with a given payload length, excluding stuff bytes
 // 3 header bytes, ID/control byte, length byte, seq byte, 4 byte CRC, EOF byte
 #define ON_WIRE_SIZE(p)                             ((p) + 11U)
@@ -64,14 +62,12 @@ static uint32_t now;
 
 uint16_t MinProtocol::min_tx_space()
 {
-    return 512;
-    //Fake, todo callbacks
+    return static_cast<uint16_t>(serial->transmitSpace());
 }
 
 void MinProtocol::min_tx_byte(uint8_t byte)
 {
-    UNUSED(byte);
-    //TODO transmit byte
+    serial->sendByte(static_cast<char>(byte));
 }
 
 void MinProtocol::min_tx_start()
@@ -87,10 +83,7 @@ void MinProtocol::min_tx_finished()
 // CALLBACK. Handle incoming MIN frame
 void MinProtocol::min_application_handler(uint8_t min_id, uint8_t *min_payload, uint8_t len_payload)
 {
-    UNUSED(min_id);
-    UNUSED(min_payload);
-    UNUSED(len_payload);
-    //TODO
+    cmd->commandProceed(min_id, min_payload, len_payload);
 }
 
 #ifdef TRANSPORT_PROTOCOL
@@ -98,8 +91,7 @@ void MinProtocol::min_application_handler(uint8_t min_id, uint8_t *min_payload, 
 // Typically a tick timer interrupt will increment a 32-bit variable every 1ms (e.g. SysTick on Cortex M ARM devices).
 uint32_t MinProtocol::min_time_ms(void)
 {
-    //TODO
-    return 0;
+    return static_cast<uint32_t>(system->getCurrentTimeInMs());
 }
 #endif
 
@@ -659,8 +651,12 @@ void MinProtocol::min_poll(uint8_t *buf, uint32_t buf_len)
 #endif // TRANSPORT_PROTOCOL
 }
 
-MinProtocol::MinProtocol()
+MinProtocol::MinProtocol(ISerialCommunication *serial, ISystem *system, ICommandInterpreter *cmd)
 {
+    this->serial = serial;
+    this->system = system;
+    this->cmd = cmd;
+
     self = static_cast<min_context *>(malloc(sizeof (struct min_context)));
 
     // Initialize context
